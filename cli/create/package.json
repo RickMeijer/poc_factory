@@ -1,0 +1,9 @@
+{
+  "exports": {
+    "svelte": "./svelte",
+    "react": "./react"
+  },
+  "devDependencies": {
+    "kleur": "4.1.5"
+  }
+}
