@@ -1,5 +1,7 @@
 {
   "main": "index.ts",
   "type": "module",
-  "devDependencies": {}
+  "devDependencies": {
+    "create-react-app": "5.0.1"
+  }
 }

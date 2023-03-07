@@ -1,19 +1,26 @@
 import { bold, cyan } from "kleur/colors";
 import { log } from "../../logger/index.js";
-
-import { create as createSvelte } from "create-svelte";
+import { exec, spawn, execFile } from "child_process";
 
 export async function create(projectName: string) {
   if (!projectName)
     return log.error("Please run the command with a project name argument");
-  console.log(bold("Creating a new react project in apps/"), projectName);
-  // await createSvelte(`apps/${projectName}`, {
-  //   name: projectName,
-  //   template: "skeleton", // or 'skeleton' or 'skeletonlib'
-  //   types: "typescript", // or 'typescript' or null;
-  //   prettier: true,
-  //   eslint: true,
-  //   playwright: true,
-  //   vitest: false,
-  // });
+
+  log.info(bold(`Creating a new react project in apps/${projectName}`));
+
+  const app = await execFile("create-react-app", [
+    `apps/${projectName}`,
+    "--template typescript",
+  ]);
+
+  app.stdout?.on("data", (data) => {
+    console.log(data);
+  });
+  app.stderr?.on("data", (data) => {
+    log.error(`stderr: ${data}`);
+  });
+
+  app.on("close", (code) => {
+    log.info(`child process exited with code ${code}`);
+  });
 }

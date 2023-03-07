@@ -50,6 +50,7 @@ async function create() {
       message: "Framework of choice?",
       type: "list",
       name: "framework",
+      default: "svelte",
       choices: ["svelte", "react", { name: "solidjs", disabled: true }],
     },
   ]);
