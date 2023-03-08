@@ -17,3 +17,7 @@ export async function create(projectName: string) {
     vitest: false,
   });
 }
+
+// TODOS:
+// update package.json with a start script
+// Default port of [x] (8080)
