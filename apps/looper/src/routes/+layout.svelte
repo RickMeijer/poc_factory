@@ -39,10 +39,12 @@
 	.theme-dark {
 		--fgColor: white;
 		--bgColor: black;
+		--supportColor: yellow;
 	}
 	.theme-light {
 		--fgColor: black;
 		--bgColor: white;
+		--supportColor: #fc0;
 	}
 
 	button {
