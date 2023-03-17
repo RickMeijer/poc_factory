@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "GNU AGPLv3",
   "devDependencies": {
     "@types/inquirer": "9.0.3",
     "@types/youtube-player": "^5.5.7",
