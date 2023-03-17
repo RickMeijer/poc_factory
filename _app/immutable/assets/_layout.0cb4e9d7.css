@@ -1,0 +1,1 @@
+body{margin:0}.wrapper.svelte-5qsftk{display:flex;flex-flow:column;height:100vh;font-family:sans-serif;background-color:var(--bgColor);color:var(--fgColor)}.theme-dark.svelte-5qsftk{--fgColor:white;--bgColor:black;--supportColor:yellow}.theme-light.svelte-5qsftk{--fgColor:black;--bgColor:white;--supportColor:#fc0}button.svelte-5qsftk{position:absolute;z-index:1;right:1em}
