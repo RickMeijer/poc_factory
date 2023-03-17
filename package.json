@@ -12,6 +12,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node-esm start.ts",
+    "build": "npm run build -ws --if-present",
+    "postbuild": "mv apps/looper/build ./dist",
     "update": "browserslist --update-db && npm-check-updates --removeRange -i -ws"
   },
   "keywords": [],
