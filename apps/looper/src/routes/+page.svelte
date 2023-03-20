@@ -6,7 +6,7 @@
 	import Button from '../components/Button.svelte';
 	import MultiRange from '../components/MultiRange.svelte';
 
-	let start = 0;
+	let start: number;
 	let stop: number;
 	let youtubeId: string;
 
@@ -24,8 +24,13 @@
 		player.seekTo(start, true);
 	}
 
+	$: if (browser && start) sessionStorage.setItem('start', start.toString());
+	$: if (browser && stop) sessionStorage.setItem('stop', stop.toString());
+
 	onMount(() => {
 		youtubeId = sessionStorage.getItem('youtubeId') || '';
+		start = Number(sessionStorage.getItem('start')) || start;
+		stop = Number(sessionStorage.getItem('stop')) || stop;
 
 		player = YouTubePlayer('player', {
 			height: '100%',
@@ -63,53 +68,73 @@
 		currentTime = await player.getCurrentTime();
 		rafTimetracker = requestAnimationFrame(trackTime);
 	}
+	function onYoutubeIdChange(e: KeyboardEvent) {
+		const inputVal = (e.target as HTMLInputElement)?.value;
+		console.log(inputVal);
+		const regEx = new RegExp(
+			/^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]{11})(?:\S+)?$/
+		);
+		const youtubeIdMatch = inputVal.match(regEx);
+
+		if (youtubeIdMatch && youtubeIdMatch.length) {
+			youtubeId = youtubeIdMatch[1];
+		}
+	}
+	// $: buttonLabel = !start ? 'start' : stop === duration ? 'stop' : 'reset';
+
+	let buttonLabel = 'begin loop';
+	function toggleLoop() {
+		if (!start) {
+			start = currentTime;
+			buttonLabel = 'end loop';
+		} else if (stop === duration) {
+			stop = currentTime;
+			buttonLabel = 'reset loop';
+		} else {
+			start = 0;
+			stop = duration;
+			buttonLabel = 'begin loop';
+		}
+	}
 </script>
 
 <div class="video-container">
 	<div class="videoId-input">
-		Youtube id
-		<input type="text" bind:value={youtubeId} />
+		Youtube link or id:
+		<input type="text" value={youtubeId} on:keydown={onYoutubeIdChange} />
 	</div>
-	{#if youtubeId}
+	<div id="player" />
+	{#if youtubeId && currentTime > 0}
 		<div class="controls">
-			<!-- <input type="number" bind:value={start} /> -->
-			<Button on:click={() => (start = currentTime)}>
-				start loop at {secondsToLabel(start || currentTime)}
-			</Button>
-
-			{#if start && stop}
-				<Button on:click={() => ((start = 0), (stop = duration))}>reset</Button>
-			{/if}
-
-			<!-- <input type="number" bind:value={stop} /> -->
-			<Button on:click={() => (stop = currentTime)}>
-				stop loop at {secondsToLabel(stop === duration ? currentTime : stop)}
+			<Button on:click={toggleLoop}>
+				{buttonLabel}
 			</Button>
 		</div>
 	{/if}
-	<div id="player" />
-	<div class="video-controls" class:muted={isPlaying}>
-		<MultiRange
-			min={0}
-			max={duration}
-			bind:minValue={start}
-			bind:maxValue={stop}
-			label={secondsToLabel}
-		/>
-	</div>
+	{#if start && stop}
+		<div class="video-controls" class:muted={isPlaying}>
+			<MultiRange
+				min={0}
+				max={duration}
+				bind:minValue={start}
+				bind:maxValue={stop}
+				label={secondsToLabel}
+			/>
+		</div>
+	{/if}
 </div>
-
-{currentTime} | {start} | {stop}
 
 <style lang="scss">
 	.video-container {
-		width: 80%;
-		aspect-ratio: 16/9;
+		width: 90%;
 		margin: auto;
 		position: relative;
 		display: flex;
 		flex-flow: column;
 		gap: 2em;
+	}
+	#player {
+		aspect-ratio: 16/9;
 	}
 	.muted {
 		opacity: 0.5;
@@ -117,7 +142,7 @@
 	.controls {
 		font-size: 2em;
 		display: flex;
-		justify-content: space-between;
+		justify-content: center;
 	}
 	.videoId-input {
 		text-align: center;
@@ -126,25 +151,22 @@
 		input {
 			font-size: inherit;
 			text-align: center;
-			animation: flyIn 0.2s ease-out;
 			background-color: transparent;
 			border: none;
+			border-bottom: 1px dashed var(--fgColor);
+
 			transition: border-width 0.2s ease, box-shadow 0.5s ease;
-			border: 1px dotted var(--fgColor);
-			border-style: dashed;
-			box-shadow: none;
-			color: var(--fgColor);
+			color: var(--supportColor);
 
 			&:focus {
 				outline: none;
 				border-width: 5px;
-				box-shadow: 0 0 1em 0 red;
 			}
 		}
 	}
-	.video-controls {
-		position: absolute;
-		width: 100%;
-		bottom: 2.6em;
-	}
+	// .video-controls {
+	// 	position: absolute;
+	// 	width: 100%;
+	// 	bottom: 2.6em;
+	// }
 </style>

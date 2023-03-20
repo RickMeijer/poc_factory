@@ -37,14 +37,26 @@
 		color: var(--fgColor);
 	}
 	.theme-dark {
-		--fgColor: white;
-		--bgColor: black;
+		--bgColor: hsl(0, 0%, 10%);
+		--bgColor-light: hsl(0, 0%, 20%);
+		--bgColor-dark: hsl(0, 0%, 0%);
+
+		--fgColor: hsl(0, 0%, 90%);
+		--fgColor-light: hsl(0, 0%, 100%);
+		--fgColor-dark: hsl(0, 0%, 50%);
+
 		--supportColor: yellow;
 	}
 	.theme-light {
-		--fgColor: black;
-		--bgColor: white;
-		--supportColor: #fc0;
+		--fgColor: hsl(0, 0%, 10%);
+		--fgColor-light: hsl(0, 0%, 20%);
+		--fgColor-dark: hsl(0, 0%, 0%);
+
+		--bgColor: hsl(0, 0%, 90%);
+		--bgColor-light: hsl(0, 0%, 50%);
+		--bgColor-dark: hsl(0, 0%, 100%);
+
+		--supportColor: #ffcc00;
 	}
 
 	button {
