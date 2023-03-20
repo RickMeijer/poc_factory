@@ -21,20 +21,26 @@
 	let trackOffset: number;
 	let windowWidth: number;
 
-	function onMouseMove(ev: MouseEvent) {
+	function updateValue(ev: PointerEvent) {
 		const position = ev.pageX - trackOffset;
 		const newValue = (position / trackWidth) * max;
 
 		if (draggingStart && newValue < maxValue && newValue >= min) minValue = newValue;
 		else if (newValue > minValue && newValue <= max) maxValue = newValue;
 	}
-	function startDrag(ev: MouseEvent) {
+	function startDrag(ev: PointerEvent) {
+		ev.preventDefault();
 		const dragElem = ev.currentTarget as HTMLElement;
+
+		dragElem.setPointerCapture(ev.pointerId);
 		draggingStart = dragElem?.classList.contains('start');
-		window.addEventListener('mousemove', onMouseMove);
+		dragElem.onpointermove = updateValue;
+		dragElem.onpointerup = stopDrag;
 	}
-	function stopDrag() {
-		window.removeEventListener('mousemove', onMouseMove);
+	function stopDrag(ev: PointerEvent) {
+		const dragElem = ev.currentTarget as HTMLElement;
+		dragElem.onpointermove = null;
+		dragElem.onpointerup = null;
 	}
 	onMount(() => {
 		const trackBBox = trackElem.getBoundingClientRect();
@@ -43,23 +49,23 @@
 	});
 </script>
 
-<svelte:window on:mouseup={stopDrag} bind:innerWidth={windowWidth} />
+<svelte:window bind:innerWidth={windowWidth} />
 <div class="controls {className}">
 	<div class="track" bind:this={trackElem} />
 	<div class="selection" style:left={startPosition} style:right={stopPosition} />
 
-	<div class="start" on:mousedown={startDrag} style:left={startPosition}>
+	<div class="start" on:pointerdown={startDrag} style:left={startPosition}>
 		<div class="valueLabel">{label(minValue)}</div>
 		<button>]</button>
 	</div>
-	<div class="stop" on:mousedown={startDrag} style:right={stopPosition}>
+	<div class="stop" on:pointerdown={startDrag} style:right={stopPosition}>
 		<div class="valueLabel">{label(maxValue)}</div>
 		<button>[</button>
 	</div>
 </div>
 
 <style lang="scss">
-	:root {
+	.controls {
 		position: relative;
 	}
 	.selection,
@@ -106,6 +112,7 @@
 	}
 	.start,
 	.stop {
+		touch-action: none;
 		position: absolute;
 		display: flex;
 		flex-flow: column;
