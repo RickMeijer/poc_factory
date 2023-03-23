@@ -13,14 +13,17 @@
 	let player: YouTubePlayerType;
 	let currentTime = 0;
 	let rafTimetracker: number;
-	let duration = 0;
+	let duration: number;
 	let isPlaying = false;
+	let error: number | null;
 
 	$: if (browser && youtubeId) sessionStorage.setItem('youtubeId', youtubeId);
 	// Load youtube player
-	$: if (browser && youtubeId) player.loadVideoById(youtubeId, start, '480');
+	$: if (player && youtubeId) {
+		player.loadVideoById(youtubeId);
+	}
 	// Looping logic
-	$: if (player && currentTime >= stop) {
+	$: if ((player && currentTime >= stop) || currentTime <= start) {
 		player.seekTo(start, true);
 	}
 
@@ -38,20 +41,32 @@
 			playerVars: {
 				modestbranding: 1,
 				rel: 0,
-				controls: 0,
+				controls: 1,
 				autoplay: 0
 			}
+		});
+		player.on('error', async ({ data }) => {
+			// 2 – The request contains an invalid parameter value. For example, this error occurs if you specify a video ID that does not have 11 characters, or if the video ID contains invalid characters, such as exclamation points or asterisks.
+			// 5 – The requested content cannot be played in an HTML5 player or another error related to the HTML5 player has occurred.
+			// 100 – The video requested was not found. This error occurs when a video has been removed (for any reason) or has been marked as private.
+			// 101 – The owner of the requested video does not allow it to be played in embedded players.
+			// 150 – This error is the same as 101. It's just a 101 error in disguise!
+			error = data;
 		});
 		player.on('stateChange', async ({ data }) => {
 			rafTimetracker && cancelAnimationFrame(rafTimetracker);
 			isPlaying = false;
+			console.log(data);
 			// Data === 1 means playing state
+			// https://developers.google.com/youtube/iframe_api_reference
 			if (data === 1) {
+				error = undefined;
 				isPlaying = true;
 				rafTimetracker = requestAnimationFrame(trackTime);
 				duration = duration || (await player.getDuration());
 				stop = stop || duration;
 			}
+			// if(data === -1)
 		});
 	});
 
@@ -70,7 +85,6 @@
 	}
 	function onYoutubeIdChange(e: KeyboardEvent) {
 		const inputVal = (e.target as HTMLInputElement)?.value;
-		console.log(inputVal);
 		const regEx = new RegExp(
 			/^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]{11})(?:\S+)?$/
 		);
@@ -80,7 +94,6 @@
 			youtubeId = youtubeIdMatch[1];
 		}
 	}
-	// $: buttonLabel = !start ? 'start' : stop === duration ? 'stop' : 'reset';
 
 	let buttonLabel = 'begin loop';
 	function toggleLoop() {
@@ -99,7 +112,7 @@
 </script>
 
 <div class="video-container">
-	<div class="videoId-input">
+	<div class="videoId-input" class:red={error}>
 		Youtube link or id:
 		<input type="text" value={youtubeId} on:keydown={onYoutubeIdChange} />
 	</div>
@@ -112,7 +125,7 @@
 		</div>
 	{/if}
 	{#if start && stop}
-		<div class="video-controls" class:muted={isPlaying}>
+		<div class="video-controls">
 			<MultiRange
 				min={0}
 				max={duration}
@@ -126,7 +139,6 @@
 
 <style lang="scss">
 	.video-container {
-		width: 90%;
 		margin: auto;
 		position: relative;
 		display: flex;
@@ -135,6 +147,10 @@
 	}
 	#player {
 		aspect-ratio: 16/9;
+		width: 100vmin;
+	}
+	.red {
+		color: red;
 	}
 	.muted {
 		opacity: 0.5;
