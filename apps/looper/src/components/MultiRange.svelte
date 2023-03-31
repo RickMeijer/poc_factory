@@ -5,6 +5,7 @@
 	export let max: number;
 	export let minValue: number;
 	export let maxValue: number;
+	export let disabled = false;
 
 	export let label = (value: number) => value.toString();
 
@@ -50,7 +51,7 @@
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
-<div class="controls {className}">
+<div class="controls {className}" class:disabled>
 	<div class="track" bind:this={trackElem} />
 	<div class="selection" style:left={startPosition} style:right={stopPosition} />
 
@@ -67,6 +68,10 @@
 <style lang="scss">
 	.controls {
 		position: relative;
+	}
+	.disabled {
+		pointer-events: none;
+		opacity: 0.5;
 	}
 	.selection,
 	.track {
@@ -122,6 +127,14 @@
 			position: absolute;
 			border: none;
 			padding: 0.2em;
+		}
+		.valueLabel {
+			opacity: 0;
+			transition: opacity 0.5s ease;
+		}
+		&:hover .valueLabel,
+		&:active .valueLabel {
+			opacity: 1;
 		}
 	}
 	.start {

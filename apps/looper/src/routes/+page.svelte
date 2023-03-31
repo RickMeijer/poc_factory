@@ -60,11 +60,11 @@
 			// Data === 1 means playing state
 			// https://developers.google.com/youtube/iframe_api_reference
 			if (data === 1) {
-				error = undefined;
+				error = null;
 				isPlaying = true;
 				rafTimetracker = requestAnimationFrame(trackTime);
 				duration = duration || (await player.getDuration());
-				stop = stop || duration;
+				// stop = stop || duration;
 			}
 			// if(data === -1)
 		});
@@ -78,35 +78,44 @@
 			.padStart(2, '0');
 		return `${minutes}:${seconds}`;
 	}
+	function labelToSeconds(value: string) {
+		if (!value) return 0;
+		const time = value.split(':');
+		const minutes = Number(time[0]) | 0;
+		const seconds = Number(time[1]) | 0;
+
+		return minutes * 60 + seconds;
+	}
 
 	async function trackTime() {
 		currentTime = await player.getCurrentTime();
 		rafTimetracker = requestAnimationFrame(trackTime);
 	}
+
 	function onYoutubeIdChange(e: KeyboardEvent) {
 		const inputVal = (e.target as HTMLInputElement)?.value;
+		if (inputVal.length === 11) {
+			return inputVal;
+		}
 		const regEx = new RegExp(
 			/^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([\w-]{11})(?:\S+)?$/
 		);
 		const youtubeIdMatch = inputVal.match(regEx);
-
 		if (youtubeIdMatch && youtubeIdMatch.length) {
-			youtubeId = youtubeIdMatch[1];
+			return youtubeIdMatch[1];
 		}
+		return '';
 	}
 
-	let buttonLabel = 'begin loop';
+	$: buttonLabel = !start ? 'begin loop' : !stop ? 'stop loop' : 'reset loop';
 	function toggleLoop() {
 		if (!start) {
 			start = currentTime;
-			buttonLabel = 'end loop';
-		} else if (stop === duration) {
+		} else if (!stop) {
 			stop = currentTime;
-			buttonLabel = 'reset loop';
 		} else {
-			start = 0;
-			stop = duration;
-			buttonLabel = 'begin loop';
+			start = undefined;
+			stop = undefined;
 		}
 	}
 </script>
@@ -114,24 +123,33 @@
 <div class="video-container">
 	<div class="videoId-input" class:red={error}>
 		Youtube link or id:
-		<input type="text" value={youtubeId} on:keydown={onYoutubeIdChange} />
+		<input type="text" value={youtubeId} on:keydown={(e) => (youtubeId = onYoutubeIdChange(e))} />
+	</div>
+	<div class="video-controls">
+		<MultiRange
+			disabled={!(start && stop)}
+			min={0}
+			max={duration}
+			bind:minValue={start}
+			bind:maxValue={stop}
+			label={secondsToLabel}
+		/>
 	</div>
 	<div id="player" />
 	{#if youtubeId && currentTime > 0}
 		<div class="controls">
+			<input
+				type="text"
+				value={secondsToLabel(start)}
+				on:input={(e) => (start = labelToSeconds(e.target.value))}
+			/>
 			<Button on:click={toggleLoop}>
 				{buttonLabel}
 			</Button>
-		</div>
-	{/if}
-	{#if start && stop}
-		<div class="video-controls">
-			<MultiRange
-				min={0}
-				max={duration}
-				bind:minValue={start}
-				bind:maxValue={stop}
-				label={secondsToLabel}
+			<input
+				type="text"
+				value={secondsToLabel(stop)}
+				on:input={(e) => (stop = labelToSeconds(e.target.value))}
 			/>
 		</div>
 	{/if}
@@ -159,25 +177,33 @@
 		font-size: 2em;
 		display: flex;
 		justify-content: center;
+		gap: 2em;
+		align-items: center;
+		input {
+			color: white;
+			width: 4em;
+		}
+	}
+	input {
+		font-size: inherit;
+		text-align: center;
+		background-color: transparent;
+		border: none;
+		border-bottom: 1px dashed var(--fgColor);
+
+		transition: border-width 0.2s ease, box-shadow 0.5s ease;
+		color: var(--supportColor);
+
+		&:focus {
+			outline: none;
+			border-width: 5px;
+		}
 	}
 	.videoId-input {
 		text-align: center;
 		font-size: 2em;
 
 		input {
-			font-size: inherit;
-			text-align: center;
-			background-color: transparent;
-			border: none;
-			border-bottom: 1px dashed var(--fgColor);
-
-			transition: border-width 0.2s ease, box-shadow 0.5s ease;
-			color: var(--supportColor);
-
-			&:focus {
-				outline: none;
-				border-width: 5px;
-			}
 		}
 	}
 	// .video-controls {
