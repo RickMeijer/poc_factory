@@ -17,7 +17,7 @@
 	let isPlaying = false;
 	let error: number | null;
 
-	$: if (browser && youtubeId) sessionStorage.setItem('youtubeId', youtubeId);
+	$: if (browser && youtubeId) localStorage.setItem('youtubeId', youtubeId);
 	// Load youtube player
 	$: if (player && youtubeId) {
 		player.loadVideoById(youtubeId);
@@ -27,13 +27,13 @@
 		player.seekTo(start, true);
 	}
 
-	$: if (browser && start) sessionStorage.setItem('start', start.toString());
-	$: if (browser && stop) sessionStorage.setItem('stop', stop.toString());
+	$: if (browser && start) localStorage.setItem('start', start.toString());
+	$: if (browser && stop) localStorage.setItem('stop', stop.toString());
 
 	onMount(() => {
-		youtubeId = sessionStorage.getItem('youtubeId') || '';
-		start = Number(sessionStorage.getItem('start')) || start;
-		stop = Number(sessionStorage.getItem('stop')) || stop;
+		youtubeId = localStorage.getItem('youtubeId') || '';
+		start = Number(localStorage.getItem('start')) || start;
+		stop = Number(localStorage.getItem('stop')) || stop;
 
 		player = YouTubePlayer('player', {
 			height: '100%',
