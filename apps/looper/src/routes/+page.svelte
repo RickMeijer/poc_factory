@@ -5,6 +5,7 @@
 	import { browser } from '$app/environment';
 	import Button from '../components/Button.svelte';
 	import MultiRange from '../components/MultiRange.svelte';
+	import Looper from '../components/Icons/Looper.svelte';
 
 	let start: number;
 	let stop: number;
@@ -17,10 +18,10 @@
 	let isPlaying = false;
 	let error: number | null;
 
-	$: if (browser && youtubeId) localStorage.setItem('youtubeId', youtubeId);
-	// Load youtube player
-	$: if (player && youtubeId) {
-		player.loadVideoById(youtubeId);
+	$: if (browser && youtubeId) {
+		localStorage.setItem('youtubeId', youtubeId);
+		resetLoop();
+		if (player) player.loadVideoById(youtubeId);
 	}
 	// Looping logic
 	$: if ((player && currentTime >= stop) || currentTime <= start) {
@@ -56,7 +57,6 @@
 		player.on('stateChange', async ({ data }) => {
 			rafTimetracker && cancelAnimationFrame(rafTimetracker);
 			isPlaying = false;
-			console.log(data);
 			// Data === 1 means playing state
 			// https://developers.google.com/youtube/iframe_api_reference
 			if (data === 1) {
@@ -69,7 +69,11 @@
 			// if(data === -1)
 		});
 	});
-
+	function resetLoop() {
+		// Yolo typescript
+		start = undefined as unknown as number;
+		stop = undefined as unknown as number;
+	}
 	function secondsToLabel(value: number) {
 		if (!value) return '';
 		const minutes = Math.floor(value / 60);
@@ -107,15 +111,14 @@
 		return '';
 	}
 
-	$: buttonLabel = !start ? 'begin loop' : !stop ? 'stop loop' : 'reset loop';
+	$: status = !start ? 'start' : !stop ? 'stop' : ('reset' as 'start' | 'stop' | 'reset');
 	function toggleLoop() {
 		if (!start) {
 			start = currentTime;
 		} else if (!stop) {
 			stop = currentTime;
 		} else {
-			start = undefined;
-			stop = undefined;
+			resetLoop();
 		}
 	}
 </script>
@@ -144,7 +147,7 @@
 				on:input={(e) => (start = labelToSeconds(e.target.value))}
 			/>
 			<Button on:click={toggleLoop}>
-				{buttonLabel}
+				<Looper {status} />
 			</Button>
 			<input
 				type="text"
