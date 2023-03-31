@@ -146,9 +146,16 @@
 				value={secondsToLabel(start)}
 				on:input={(e) => (start = labelToSeconds(e.target.value))}
 			/>
-			<Button on:click={toggleLoop}>
-				<Looper {status} />
-			</Button>
+			<div class="ble">
+				{#if status !== 'reset'}
+					{status} loop at {secondsToLabel(currentTime)}
+				{:else}
+					reset loop
+				{/if}
+				<Button on:click={toggleLoop}>
+					<Looper {status} />
+				</Button>
+			</div>
 			<input
 				type="text"
 				value={secondsToLabel(stop)}
@@ -165,6 +172,12 @@
 		display: flex;
 		flex-flow: column;
 		gap: 2em;
+	}
+	.ble {
+		display: flex;
+		flex-flow: column-reverse;
+		gap: 1em;
+		align-items: center;
 	}
 	#player {
 		aspect-ratio: 16/9;
