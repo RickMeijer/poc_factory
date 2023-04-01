@@ -125,7 +125,7 @@
 
 <div class="video-container">
 	<div class="videoId-input" class:red={error}>
-		Youtube link or id:
+		Paste Youtube link or id here:
 		<input type="text" value={youtubeId} on:keydown={(e) => (youtubeId = onYoutubeIdChange(e))} />
 	</div>
 	<div class="video-controls">
@@ -147,11 +147,6 @@
 				on:input={(e) => (start = labelToSeconds(e.target.value))}
 			/>
 			<div class="ble">
-				{#if status !== 'reset'}
-					{status} loop at {secondsToLabel(currentTime)}
-				{:else}
-					reset loop
-				{/if}
 				<Button on:click={toggleLoop}>
 					<Looper {status} />
 				</Button>
@@ -166,12 +161,16 @@
 </div>
 
 <style lang="scss">
+	h1 {
+		text-align: center;
+	}
 	.video-container {
-		margin: auto;
+		margin: 1em auto;
 		position: relative;
 		display: flex;
 		flex-flow: column;
 		gap: 2em;
+		width: 80%;
 	}
 	.ble {
 		display: flex;
@@ -181,7 +180,6 @@
 	}
 	#player {
 		aspect-ratio: 16/9;
-		width: 100vmin;
 	}
 	.red {
 		color: red;
@@ -195,9 +193,13 @@
 		justify-content: center;
 		gap: 2em;
 		align-items: center;
+		@media (max-width: 500px) {
+			flex-flow: column;
+		}
 		input {
 			color: white;
-			width: 4em;
+			max-width: 4em;
+			width: 100%;
 		}
 	}
 	input {
@@ -217,9 +219,11 @@
 	}
 	.videoId-input {
 		text-align: center;
-		font-size: 2em;
+		font-size: 1em;
 
 		input {
+			font-size: 2em;
+			width: 100%;
 		}
 	}
 	// .video-controls {

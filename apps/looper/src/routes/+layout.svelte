@@ -12,6 +12,7 @@
 		}
 	});
 
+	$: themeToggle = $theme === 'dark' ? '☀️' : '🌛';
 	function toggleTheme() {
 		$theme = $theme === 'light' ? 'dark' : 'light';
 		localStorage.setItem('theme', $theme);
@@ -19,7 +20,7 @@
 </script>
 
 <div class={`wrapper theme-${$theme}`}>
-	<button on:click={toggleTheme}>Toggle theme {$theme}</button>
+	<button on:click={toggleTheme}>{themeToggle}</button>
 	<slot />
 </div>
 
@@ -62,6 +63,9 @@
 	button {
 		position: absolute;
 		z-index: 1;
-		right: 1em;
+		right: 0em;
+		background: transparent;
+		border: none;
+		font-size: 2em;
 	}
 </style>
